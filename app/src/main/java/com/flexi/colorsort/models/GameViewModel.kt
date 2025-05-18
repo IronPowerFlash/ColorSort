@@ -14,7 +14,6 @@ class GameViewModel : ViewModel(){
     var settings:GameSettings by mutableStateOf(GameSettings())
     private var _containers = generateGame().toMutableStateList()
 
-    val maxBricks = settings.containerSize
     var isSolved:Boolean by mutableStateOf(false)
         private set
     var moves:Int by mutableIntStateOf(0)
@@ -36,11 +35,11 @@ class GameViewModel : ViewModel(){
         else if(newSelected != null && currentlySelected.id != newSelected.id){
             currentlySelected.selected = false
             newSelected.selected = true
-            var anyMovesMade = false;
-            while(currentlySelected.canPop() && newSelected.canPush(maxBricks, currentlySelected.bricks[0])) {
+            var anyMovesMade = false
+            while(currentlySelected.canPop() && newSelected.canPush(settings.containerSize, currentlySelected.bricks[0])) {
                 var brick = currentlySelected.bricks.removeAt(0)
                 newSelected.bricks.add(0, brick)
-                anyMovesMade = true;
+                anyMovesMade = true
             }
             if(anyMovesMade)
             {
@@ -71,20 +70,7 @@ class GameViewModel : ViewModel(){
         val tag = "generateGame"
         var totalNoContainers = settings.containerCount
         var colorUnits:MutableList<Color?> = mutableListOf()
-
-
-        val colorMap = mapOf(
-            Pair<Int, Color>(1, Color.Yellow),
-            Pair<Int, Color>(2, Color.Blue),
-            Pair<Int, Color>(3, Color.Green),
-            Pair<Int, Color>(4, Color.Magenta),
-            Pair<Int, Color>(5, Color(157, 0, 255)), //purple
-            Pair<Int, Color>(6, Color.Red), // light yellow
-            Pair<Int, Color>(7, Color.Cyan),
-            Pair<Int, Color>(8, Color(133, 255, 133)),
-            Pair<Int, Color>(9, Color(196, 107, 255, 255)), // purple
-            Pair<Int, Color>(10, Color(255, 170, 0)) //orange
-        )
+        val colorMap = ColorSchemes.getColorScheme(settings.colorSchemeId).colorMap
 
         for(i in 1..settings.containerCount){
             var noColorUnits = settings.containerSize - 1 + Math.random().roundToInt()
@@ -129,13 +115,11 @@ class GameViewModel : ViewModel(){
     fun updateSettings(value: GameSettings) {
         if(settings.colorCount != value.colorCount
             || settings.containerCount != value.containerCount
-            || settings.containerSize != value.containerSize)
+            || settings.containerSize != value.containerSize
+            || settings.colorSchemeId != value.colorSchemeId)
         {
             settings = value
             restartGame()
         }
     }
 }
-
-
-private fun getContainers() = List(5){ i-> BrickContainer(i, listOf(Color.Green, Color.Blue), false) }

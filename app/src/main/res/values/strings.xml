@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">ColorSort</string>
+    <string name="solved_Header">Woohoo! You\'ve solved it!</string>
+    <string name="btn_Restart">Restart</string>
+    <string name="btn_Settings">Settings</string>
+    <string name="level">Level</string>
+    <string name="moves">Moves</string>
+    <string name="settings">Settings</string>
+    <string name="container_count">Number of containers</string>
+    <string name="container_size">Number of bricks</string>
+    <string name="color_count">Number of colors</string>
+    <string name="btn_Close">Close</string>
+    <string name="btn_Save">Save</string>
+    <string name="color_scheme">Color scheme</string>
 </resources>
