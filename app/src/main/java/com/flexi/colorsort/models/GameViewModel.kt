@@ -12,11 +12,16 @@ import kotlin.math.roundToInt
 
 class GameViewModel : ViewModel(){
     var settings:GameSettings by mutableStateOf(GameSettings())
-    private var _containers = generateGame().toMutableStateList()
+    private var _originalContainers = generateGame()
+    private var _containers = _originalContainers.map{it.copy()}.toMutableStateList()
+    private var _containerHistory = emptyList<List<BrickContainer>>().toMutableList()
 
+    private val maxUndos:Int = 3
     var isSolved:Boolean by mutableStateOf(false)
         private set
     var moves:Int by mutableIntStateOf(0)
+        private set
+    var canUndo:Boolean by mutableStateOf(false)
         private set
     val containers: List<BrickContainer>
         get() = _containers
@@ -35,14 +40,19 @@ class GameViewModel : ViewModel(){
         else if(newSelected != null && currentlySelected.id != newSelected.id){
             currentlySelected.selected = false
             newSelected.selected = true
-            var anyMovesMade = false
-            while(currentlySelected.canPop() && newSelected.canPush(settings.containerSize, currentlySelected.bricks[0])) {
-                var brick = currentlySelected.bricks.removeAt(0)
-                newSelected.bricks.add(0, brick)
-                anyMovesMade = true
-            }
-            if(anyMovesMade)
-            {
+
+
+            if(currentlySelected.canPop() && newSelected.canPush(settings.containerSize, currentlySelected.bricks[0])) {
+
+                addContainersToHistory()
+                while (currentlySelected.canPop() && newSelected.canPush(
+                        settings.containerSize,
+                        currentlySelected.bricks[0]
+                    )
+                ) {
+                    var brick = currentlySelected.bricks.removeAt(0)
+                    newSelected.bricks.add(0, brick)
+                }
                 moves++
             }
             _containers.forEach { container -> container.selected = false }
@@ -53,8 +63,36 @@ class GameViewModel : ViewModel(){
         checkIsSolved()
     }
 
-    fun restartGame(){
-        _containers = generateGame().toMutableStateList()
+    fun restart(){
+        if(_originalContainers.isNotEmpty()){
+            _containers.clear()
+            _containers.addAll(_originalContainers)
+        }
+    }
+
+    fun undo(){
+        if(_containerHistory.isNotEmpty()) {
+            var previousContainers = _containerHistory.removeAt(_containerHistory.lastIndex)
+            _containers.clear()
+            _containers.addAll(previousContainers)
+            _containers.forEach { container -> container.selected = false }
+        }
+        canUndo = !_containerHistory.isEmpty()
+    }
+
+    private fun addContainersToHistory(){
+        if(_containerHistory.size >= maxUndos){
+            while(_containerHistory.size >= maxUndos){
+                _containerHistory.removeAt(0)
+            }
+        }
+        _containerHistory.add(_containers.map {it.copy()}.toList())
+        canUndo = true
+    }
+
+    fun newGame(){
+        _originalContainers = generateGame()
+        _containers = _originalContainers.map{it.copy()}.toMutableStateList()
         moves = 0
         isSolved = false
     }
@@ -93,7 +131,7 @@ class GameViewModel : ViewModel(){
         Log.d(tag, "ColorUnits size: ${colorUnits.size}")
 
         var containers: MutableList<BrickContainer> = mutableListOf()
-        var brickCounter = 0;
+        var brickCounter = 0
         for (i in 0..totalNoContainers-1) {
             var startIndex = i*settings.containerSize
             if(startIndex < 0) {
@@ -119,7 +157,7 @@ class GameViewModel : ViewModel(){
             || settings.colorSchemeId != value.colorSchemeId)
         {
             settings = value
-            restartGame()
+            newGame()
         }
     }
 }

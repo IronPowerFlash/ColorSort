@@ -22,4 +22,7 @@ class BrickContainer(val id:Int, val initialBricks:List<Color>, selected:Boolean
 
         return bricks.size < maxSize && color == bricks[0]
     }
+    fun copy(): BrickContainer{
+        return BrickContainer(id, bricks.toList(), selected)
+    }
 }
