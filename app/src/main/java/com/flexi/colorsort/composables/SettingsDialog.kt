@@ -1,22 +1,21 @@
 package com.flexi.colorsort.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -60,53 +59,64 @@ fun SettingsDialog(
     Dialog(onDismissRequest = {}) {
         Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(500.dp)
-                .padding(20.dp),
+                .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            ) {
                 Text(
                     stringResource(R.string.settings),
                     fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 20.dp)
+                    textAlign = TextAlign.Center
                 )
-                IntegerSliderField(1, 10, R.string.container_count, settings.containerCount,
-                    {newValue -> containerCount = newValue})
+                IntegerSliderField(
+                    1, 10, R.string.container_count, settings.containerCount,
+                    { newValue -> containerCount = newValue })
+                IntegerSliderField(
+                    1, 10, R.string.container_size, settings.containerSize,
+                    { newValue -> containerSize = newValue })
 
-                IntegerSliderField(1, 10, R.string.container_size, settings.containerSize,
-                    {newValue -> containerSize = newValue})
+                IntegerSliderField(
+                    1, 10, R.string.color_count, settings.colorCount,
+                    onValueChanged = { newValue -> colorCount = newValue })
+                Text(stringResource(R.string.color_scheme), modifier = Modifier.fillMaxWidth(0.5f))
+                Row( Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically){
 
-                IntegerSliderField(1, 10, R.string.color_count, settings.colorCount,
-                    onValueChanged = {newValue -> colorCount = newValue })
-
-                Text(stringResource(R.string.color_scheme))
-                TextButton(onClick = { colorSchemeExpanded = !colorSchemeExpanded }
+                TextButton(onClick = { colorSchemeExpanded = !colorSchemeExpanded },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Color scheme ${colorSchemeId + 1}")
+                    Text(ColorSchemes.getColorScheme(colorSchemeId).name)
                 }
-                Box {
+
+                Box(modifier = Modifier.fillMaxWidth()) {
                     DropdownMenu(
                         expanded = colorSchemeExpanded,
-                        onDismissRequest = { colorSchemeExpanded = false }) {
+                        onDismissRequest = { colorSchemeExpanded = false },
+                        modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(15.dp)){
                         ColorSchemes.getColorSchemeIds().forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text("Color scheme ${option + 1}") },
-                                onClick = {
-                                    colorSchemeId = option
+                                ColorSchemeSwatch(option, { id ->
+                                    colorSchemeId = id
                                     colorSchemeExpanded = false
                                 })
+                            }
                         }
 
                     }
                 }
-                Text("Changing settings will start a new game",
+                }
+                Text(
+                    "Changing settings will start a new game",
                     fontStyle = FontStyle.Italic,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth())
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
@@ -135,49 +145,129 @@ fun SettingsDialog(
     }
 }
 
+@Composable
+fun ColorSchemeSwatch(colorSchemeId:Int, onClick:(Int)->Unit){
+    var colorScheme = ColorSchemes.getColorScheme(colorSchemeId)
+    Column( modifier = Modifier.fillMaxWidth()
+        .clickable( onClick ={ onClick(colorSchemeId)})) {
+        Text(colorScheme.name, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        Row(Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color1)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color2)
+            )
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color3)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color4)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color5)
+            )
+        }
+        Row(Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color6)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color7)
+            )
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color8)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color9)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color10)
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IntegerSliderField(
-    minValue:Int,
-    maxValue:Int,
-    labelResourceId:Int,
-    initialValue:Int,
-    onValueChanged: (value:Int)->Unit)
-{
+    minValue: Int,
+    maxValue: Int,
+    labelResourceId: Int,
+    initialValue: Int,
+    onValueChanged: (value: Int) -> Unit,
+) {
 
-    var currentValue by remember{ mutableFloatStateOf(initialValue.toFloat()) }
+    var currentValue by remember { mutableFloatStateOf(initialValue.toFloat()) }
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(stringResource(labelResourceId))
-    }
+        Text(stringResource(labelResourceId), modifier= Modifier.fillMaxWidth(0.3f))
+
     val interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+
     Slider(
         value = currentValue,
         onValueChange = { currentValue = it },
         steps = maxValue - 2,
-        onValueChangeFinished = { onValueChanged(currentValue.roundToInt())},
+        onValueChangeFinished = { onValueChanged(currentValue.roundToInt()) },
+        modifier = Modifier.padding(0.dp),
         thumb = {
             val shape = CircleShape
             Column(
                 modifier = Modifier
                     .size(30.dp)
                     .hoverable(interactionSource = interactionSource)
-                    .shadow(0.dp, CircleShape, clip = false)
+                    .shadow(2.dp, CircleShape, clip = true)
                     .background(MaterialTheme.colorScheme.primary, shape),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             )
             {
-                Text("${currentValue.roundToInt()}",
-                    color = MaterialTheme.colorScheme.onPrimary)
+                Text(
+                    "${currentValue.roundToInt()}",
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
             }
 
         },
         valueRange = minValue.toFloat()..maxValue.toFloat()
     )
-
+    }
 }
 
 @Preview

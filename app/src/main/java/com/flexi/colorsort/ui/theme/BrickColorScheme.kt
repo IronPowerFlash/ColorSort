@@ -3,6 +3,8 @@ package com.flexi.colorsort.ui.theme
 import androidx.compose.ui.graphics.Color
 
 class BrickColorScheme(
+    val id:Int,
+    val name:String,
     val color1:Color,
     val color2: Color,
     val color3:Color,
@@ -13,6 +15,7 @@ class BrickColorScheme(
     val color8:Color,
     val color9: Color,
     val color10:Color,
+
 
 ){
     val colorMap = mapOf(Pair<Int, Color>(1, color1),

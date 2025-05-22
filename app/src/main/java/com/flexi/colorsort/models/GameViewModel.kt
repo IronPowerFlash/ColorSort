@@ -16,7 +16,7 @@ class GameViewModel : ViewModel(){
     private var _containers = _originalContainers.map{it.copy()}.toMutableStateList()
     private var _containerHistory = emptyList<List<BrickContainer>>().toMutableList()
 
-    private val maxUndos:Int = 3
+    private val maxUndos:Int = 5
     var isSolved:Boolean by mutableStateOf(false)
         private set
     var moves:Int by mutableIntStateOf(0)
@@ -66,7 +66,7 @@ class GameViewModel : ViewModel(){
     fun restart(){
         if(_originalContainers.isNotEmpty()){
             _containers.clear()
-            _containers.addAll(_originalContainers)
+            _containers.addAll(_originalContainers.map{it.copy()})
         }
     }
 
@@ -93,8 +93,10 @@ class GameViewModel : ViewModel(){
     fun newGame(){
         _originalContainers = generateGame()
         _containers = _originalContainers.map{it.copy()}.toMutableStateList()
+        _containerHistory.clear()
         moves = 0
         isSolved = false
+        canUndo = false
     }
 
     private fun checkIsSolved()
