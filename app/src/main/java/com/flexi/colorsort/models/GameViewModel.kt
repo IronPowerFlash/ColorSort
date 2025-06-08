@@ -6,43 +6,69 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.flexi.colorsort.data.SettingsRepository
+import com.flexi.colorsort.data.UserAppSettings
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
-class GameViewModel : ViewModel(){
-    var settings:GameSettings by mutableStateOf(GameSettings())
-    private var _originalContainers = generateGame()
-    private var _containers = _originalContainers.map{it.copy()}.toMutableStateList()
+private const val TAG : String = "GameViewModel"
+
+@HiltViewModel
+class GameViewModel @Inject constructor(
+    private val settingsRepository: SettingsRepository, // Injecting SettingsRepository
+) : ViewModel() {
+    var settings: GameSettings by mutableStateOf(GameSettings())
+        private set
+    private var _originalContainers = emptyList<BrickContainer>()
+    private var _containers = _originalContainers.map { it.copy() }.toMutableStateList()
     private var _containerHistory = emptyList<List<BrickContainer>>().toMutableList()
 
-    private val maxUndos:Int = 5
-    var isSolved:Boolean by mutableStateOf(false)
+    init {
+        Log.d(TAG, "running init")
+        viewModelScope.launch{
+            settingsRepository.settingsFlow.collect { userAppSettings ->
+                Log.d(TAG, "userAppSettings in repo: containerCount: ${userAppSettings.containerCount}, containerSize: ${userAppSettings.containerSize}")
+                settings = mapToGameSettings(userAppSettings)
+                newGame()
+            }
+        }
+    }
+
+    private val maxUndos: Int = 5
+    var isSolved: Boolean by mutableStateOf(false)
         private set
-    var moves:Int by mutableIntStateOf(0)
+    var moves: Int by mutableIntStateOf(0)
         private set
-    var canUndo:Boolean by mutableStateOf(false)
+    var canUndo: Boolean by mutableStateOf(false)
         private set
     val containers: List<BrickContainer>
         get() = _containers
+    var gameIconIds = emptyList<Int>().toMutableStateList()
+        private set
 
-    fun setContainerSelected(item: BrickContainer){
-        if(isSolved){
+    fun setContainerSelected(item: BrickContainer) {
+        if (isSolved) {
             return
         }
-        var currentlySelected = _containers.find{it.selected}
-        var newSelected = _containers.find{it.id == item.id}
+        var currentlySelected = _containers.find { it.selected }
+        var newSelected = _containers.find { it.id == item.id }
 
-        if(currentlySelected == null)
-        {
-            newSelected?.let{container -> container.selected = true}
-        }
-        else if(newSelected != null && currentlySelected.id != newSelected.id){
+        if (currentlySelected == null) {
+            newSelected?.let { container -> container.selected = true }
+        } else if (newSelected != null && currentlySelected.id != newSelected.id) {
             currentlySelected.selected = false
             newSelected.selected = true
 
 
-            if(currentlySelected.canPop() && newSelected.canPush(settings.containerSize, currentlySelected.bricks[0])) {
+            if (currentlySelected.canPop() && newSelected.canPush(
+                    settings.containerSize,
+                    currentlySelected.bricks[0]
+                )
+            ) {
 
                 addContainersToHistory()
                 while (currentlySelected.canPop() && newSelected.canPush(
@@ -56,22 +82,15 @@ class GameViewModel : ViewModel(){
                 moves++
             }
             _containers.forEach { container -> container.selected = false }
-        }
-        else{
-            newSelected?.let {container -> container.selected = !container.selected }
+        } else {
+            newSelected?.let { container -> container.selected = !container.selected }
         }
         checkIsSolved()
     }
 
-    fun restart(){
-        if(_originalContainers.isNotEmpty()){
-            _containers.clear()
-            _containers.addAll(_originalContainers.map{it.copy()})
-        }
-    }
 
-    fun undo(){
-        if(_containerHistory.isNotEmpty()) {
+    fun undo() {
+        if (_containerHistory.isNotEmpty()) {
             var previousContainers = _containerHistory.removeAt(_containerHistory.lastIndex)
             _containers.clear()
             _containers.addAll(previousContainers)
@@ -80,86 +99,135 @@ class GameViewModel : ViewModel(){
         canUndo = !_containerHistory.isEmpty()
     }
 
-    private fun addContainersToHistory(){
-        if(_containerHistory.size >= maxUndos){
-            while(_containerHistory.size >= maxUndos){
+    private fun addContainersToHistory() {
+        if (_containerHistory.size >= maxUndos) {
+            while (_containerHistory.size >= maxUndos) {
                 _containerHistory.removeAt(0)
             }
         }
-        _containerHistory.add(_containers.map {it.copy()}.toList())
+        _containerHistory.add(_containers.map { it.copy() }.toList())
         canUndo = true
     }
 
-    fun newGame(){
+    fun newGame() {
         _originalContainers = generateGame()
-        _containers = _originalContainers.map{it.copy()}.toMutableStateList()
+        _containers = _originalContainers.map { it.copy() }.toMutableStateList()
         _containerHistory.clear()
+        updateGameIcons()
+        moves = 0
+        isSolved = false
+        canUndo = false
+    }
+    private fun updateGameIcons()
+    {
+        gameIconIds.clear()
+        gameIconIds = settings.selectedIconIds.toMutableStateList()
+        if(settings.colorCount > gameIconIds.size){
+            gameIconIds.addAll(IconStore.getRandomIconIds(settings.colorCount - gameIconIds.size))
+        }
+    }
+
+    fun restart() {
+        if (_originalContainers.isNotEmpty()) {
+            _containers.clear()
+            _containers.addAll(_originalContainers.map { it.copy() })
+        }
         moves = 0
         isSolved = false
         canUndo = false
     }
 
-    private fun checkIsSolved()
-    {
-        isSolved =  _containers.all { container -> container.bricks.isEmpty() ||
-                container.bricks.all{brick -> brick == container.bricks[0]} }
-        Log.d("GameViewModel", "isSolved: $isSolved")
-    }
-
-    private fun generateGame():List<BrickContainer>{
-        val tag = "generateGame"
-        var totalNoContainers = settings.containerCount
-        var colorUnits:MutableList<Color?> = mutableListOf()
-        val colorMap = ColorSchemes.getColorScheme(settings.colorSchemeId).colorMap
-
-        for(i in 1..settings.containerCount){
-            var noColorUnits = settings.containerSize - 1 + Math.random().roundToInt()
-            var colorChoice = i % settings.colorCount
-            if (colorChoice < 1){
-                colorChoice = i
-            }
-
-            var newUnits = Array<Color?>(noColorUnits) { colorMap[colorChoice] ?: Color.Yellow}
-            colorUnits.addAll(newUnits)
+    private fun checkIsSolved() {
+        isSolved = _containers.all { container ->
+            container.bricks.isEmpty() ||
+                    container.bricks.all { brick -> brick == container.bricks[0] }
         }
-        Log.d(tag, "ColorUnits size: ${colorUnits.size}")
-        var emptyUnitsCount = totalNoContainers * settings.containerSize - colorUnits.size
-        Log.d(tag, "Empty units: $emptyUnitsCount")
-        if(emptyUnitsCount > 0){
-            colorUnits.addAll(Array<Color?>(emptyUnitsCount) { null })
-        }
-
-        colorUnits.shuffle()
-        Log.d(tag, "ColorUnits size: ${colorUnits.size}")
-
-        var containers: MutableList<BrickContainer> = mutableListOf()
-        var brickCounter = 0
-        for (i in 0..totalNoContainers-1) {
-            var startIndex = i*settings.containerSize
-            if(startIndex < 0) {
-                startIndex = 0
-            }
-            var endIndex = i * settings.containerSize + settings.containerSize
-            Log.d(tag, "startIndex: $startIndex, endIndex: $endIndex")
-            var units = colorUnits.slice(IntRange(startIndex, endInclusive = endIndex-1))
-            var colored = units.filter{ color -> color != null} as List<Color>
-            brickCounter+= colored.size
-            containers.add(BrickContainer(id = i+1, initialBricks = colored, selected = false))
-        }
-        containers.add(BrickContainer(id = totalNoContainers +1, initialBricks = emptyList(), selected = false))
-        containers.add(BrickContainer(id = totalNoContainers +2, initialBricks = emptyList(), selected = false))
-
-        return containers
     }
 
     fun updateSettings(value: GameSettings) {
-        if(settings.colorCount != value.colorCount
+        if (settings.colorCount != value.colorCount
             || settings.containerCount != value.containerCount
             || settings.containerSize != value.containerSize
-            || settings.colorSchemeId != value.colorSchemeId)
-        {
+        ) {
+            Log.d("updateSettings", "new game")
             settings = value
             newGame()
+        } else
+            if (settings.colorSchemeId != value.colorSchemeId
+            || settings.colorBlindMode != value.colorBlindMode
+            || settings.selectedIconIds != value.selectedIconIds
+        ) {
+            Log.d("updateSettings", "update game icons")
+            settings = value
+            updateGameIcons()
         }
+        viewModelScope.launch {
+            settingsRepository.updateSettings(value)
+        }
+    }
+
+    private fun mapToGameSettings(userAppSettings: UserAppSettings): GameSettings {
+        Log.d(TAG, "mapping GameSettings from {containerSize: ${userAppSettings.containerSize}, " +
+                "containerCount: ${userAppSettings.containerCount}, " +
+                "colorCount: ${userAppSettings.colorCount}, " +
+                "colorBlindMode: ${userAppSettings.colorblindMode}, " +
+                "colorSchemeId: ${userAppSettings.colorSchemeId}, " +
+                "selectedIcons: ${userAppSettings.selectedIconsList.joinToString(", ")}}")
+        var gameSettings = GameSettings(
+            containerSize = if(userAppSettings.containerSize == 0) 3 else userAppSettings.containerSize,
+            containerCount = if(userAppSettings.containerCount == 0) 2 else userAppSettings.containerCount,
+            colorCount = if(userAppSettings.colorCount == 0) 3 else userAppSettings.colorCount,
+            colorBlindMode = userAppSettings.colorblindMode,
+            colorSchemeId = if(userAppSettings.colorSchemeId == 0) 1 else userAppSettings.colorSchemeId,
+            selectedIconIds = userAppSettings.selectedIconsList
+        )
+        return gameSettings
+    }
+    private fun generateGame(): List<BrickContainer> {
+        var totalNoContainers = settings.containerCount
+        var colorUnits: MutableList<Int> = mutableListOf()
+//        Log.d("generateGame", "totalNoContainers: $totalNoContainers")
+        for (i in 1..totalNoContainers) {
+            var noColorUnits = settings.containerSize - 1 + Math.random().roundToInt()
+            var colorChoice = i % settings.colorCount
+            colorUnits.addAll(Array<Int>(noColorUnits) { colorChoice })
+        }
+        var emptyUnitsCount = totalNoContainers * settings.containerSize - colorUnits.size
+        if (emptyUnitsCount > 0) {
+            colorUnits.addAll(Array<Int>(emptyUnitsCount) { -1 })
+        }
+//        Log.d("generateGame", "ColorUnits size: ${colorUnits.size}")
+//        Log.d("generateGame", "Empty units: $emptyUnitsCount")
+//        Log.d("generateGame", "ColorUnits size: ${colorUnits.size}")
+        colorUnits.shuffle()
+        var containers: MutableList<BrickContainer> = mutableListOf()
+        var brickCounter = 0
+        for (i in 0..totalNoContainers - 1) {
+            var startIndex = i * settings.containerSize
+            if (startIndex < 0) {
+                startIndex = 0
+            }
+            var endIndex = i * settings.containerSize + settings.containerSize
+            Log.d("generateGame", "startIndex: $startIndex, endIndex: $endIndex")
+            var units = colorUnits.slice(IntRange(startIndex, endInclusive = endIndex-1))
+            var colored = units.filter { color -> color >= 0 }
+            brickCounter += colored.size
+            containers.add(BrickContainer(id = i + 1, initialBricks = colored, selected = false))
+        }
+        containers.add(
+            BrickContainer(
+                id = totalNoContainers + 1,
+                initialBricks = emptyList(),
+                selected = false
+            )
+        )
+        containers.add(
+            BrickContainer(
+                id = totalNoContainers + 2,
+                initialBricks = emptyList(),
+                selected = false
+            )
+        )
+        return containers
     }
 }

@@ -1,6 +1,6 @@
 package com.flexi.colorsort.composables
 
-import android.util.Log
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,17 +24,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import androidx.core.graphics.ColorUtils
 import androidx.window.core.layout.WindowSizeClass
 import com.flexi.colorsort.extensions.glowBorder
 import com.flexi.colorsort.models.BrickContainer
+import com.flexi.colorsort.models.ColorSchemes
+import com.flexi.colorsort.models.IconStore
+import com.flexi.colorsort.ui.theme.BrickColorScheme
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
@@ -46,6 +53,10 @@ fun BrickContainerList(
     maxBricks: Int,
     modifier: Modifier = Modifier,
     windowSizeClass: WindowSizeClass,
+    colorScheme: BrickColorScheme,
+    renderIcons: Boolean,
+    iconIds: List<Int> = emptyList<Int>()
+
 ) {
     var rowCount = 1
     if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)) {
@@ -54,10 +65,8 @@ fun BrickContainerList(
         rowCount = 2
 
     var maxItems = ceil(containers.size / rowCount.toFloat()).roundToInt()
-    Log.d("BrickContainerList", "containerCount: ${containers.size}, maxItems: $maxItems")
     var rowSize by remember { mutableStateOf(Size.Zero) }
     val spacing = 20
-    Log.d("BrickContainerList", "rowCount: $rowCount")
 
     FlowRow(
         modifier = modifier
@@ -82,7 +91,10 @@ fun BrickContainerList(
                 onContainerSelected = { onContainerSelected(container) },
                 maxBricks = maxBricks,
                 maxColumnWidth = maxColumnWidth,
-                maxColumnHeight = columnHeight
+                maxColumnHeight = columnHeight,
+                colorScheme = colorScheme,
+                renderIcons = renderIcons,
+                iconIds = iconIds
             )
         }
     }
@@ -90,13 +102,16 @@ fun BrickContainerList(
 
 @Composable
 fun BrickContainerComponent(
-    bricks: List<Color>,
+    bricks: List<Int>,
     isSelected: Boolean,
     onContainerSelected: () -> Unit,
     modifier: Modifier = Modifier,
     maxBricks: Int,
     maxColumnWidth: Dp,
     maxColumnHeight: Dp,
+    colorScheme: BrickColorScheme,
+    renderIcons: Boolean,
+    iconIds: List<Int>
 ) {
     var borderWidth = 2
     val spacing = 3
@@ -110,28 +125,16 @@ fun BrickContainerComponent(
     } - (spacing * 1.25).dp
 
     var columnWidth = maxColumnWidth - (spacing * 4).dp - (borderWidth * 2).dp
-    Log.d(
-        "BrickContainer",
-        "Initial calc. columnHeight: $columnHeight, columnWidth: $columnWidth, maxBrickHeight: $maxBrickHeight"
-    )
-
     if (columnWidth > maxBrickHeight) {
         columnWidth = maxBrickHeight
-        Log.d(
-            "BrickContainer",
-            "columnWidth > maxBrickHeight. columnHeight: $columnHeight, columnWidth: $columnWidth, maxBrickHeight: $maxBrickHeight"
-        )
     }
     if (maxBrickHeight > columnWidth) {
         columnHeight = maxBrickHeight * maxBricks
         maxBrickHeight = LocalDensity.current.run {
             (1f / maxBricks * (columnHeight.toPx())).toDp()
         } - (spacing * 1.25).dp
-        Log.d(
-            "BrickContainer",
-            "maxBrickHeight > columnWidth. columnHeight: $columnHeight, columnWidth: $columnWidth, maxBrickHeight: $maxBrickHeight"
-        )
     }
+
     Column(
         modifier = Modifier
             .width(columnWidth + (spacing * 2).dp + (borderWidth * 2).dp)
@@ -144,26 +147,57 @@ fun BrickContainerComponent(
         verticalArrangement = Arrangement.spacedBy(spacing.dp, Alignment.Bottom),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         for (brick in bricks) {
-            ColorBrick(brick, modifier, maxBrickHeight, columnWidth)
+//            val icon = iconIds?.size?.let { if(it > 0 && it >= brick) IconStore.iconMap[iconIds[brick]] else null }
+            val icon = IconStore.iconMap[iconIds[brick]]
+            ColorBrick(brick, modifier, maxBrickHeight, columnWidth, colorScheme, renderIcons, icon)
         }
     }
 }
 
 @Composable
 fun ColorBrick(
-    color: Color,
+    colorId: Int,
     modifier: Modifier = Modifier,
     height: Dp,
     width: Dp,
+    colorScheme: BrickColorScheme,
+    renderIcon:Boolean,
+    iconResourceId: Int? = null
 ) {
+    val color = colorScheme.colorMap[colorId]?:Color.Green
     Box(
         modifier = modifier
             .background(color)
             .height(height)
             .width(width)
-    ) {}
+            .padding(3.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        if(renderIcon && iconResourceId != null) {
+            BrickShape(iconResourceId, color)
+        }
+    }
 }
+
+@Composable
+fun BrickShape(
+    iconResourceId: Int,
+    brickColor: Color) {
+    val contrastMap = mapOf<Color, Double>(
+        Pair<Color, Double>(Color.White, ColorUtils.calculateContrast(Color.White.toArgb(), brickColor.toArgb())),
+        Pair<Color, Double>(Color.Gray, ColorUtils.calculateContrast(Color.Gray.toArgb(), brickColor.toArgb())),
+        Pair<Color, Double>(Color.Black, ColorUtils.calculateContrast(Color.Black.toArgb(), brickColor.toArgb()))
+    )
+    val iconColor = contrastMap.maxBy { it.value }.key
+    Icon(
+        painterResource(iconResourceId),
+        tint = iconColor,
+        contentDescription = "",
+    )
+}
+
 
 @Preview
 @PreviewScreenSizes
@@ -180,7 +214,9 @@ fun BrickContainerListPreview() {
         getPreviewContainers(containerCount, brickCount),
         onContainerSelected = {},
         maxBricks = brickCount,
-        windowSizeClass = windowSizeClass
+        windowSizeClass = windowSizeClass,
+        colorScheme = ColorSchemes.getColorScheme(2),
+        renderIcons = true
     )
 
 }
@@ -188,7 +224,7 @@ fun BrickContainerListPreview() {
 private fun getPreviewContainers(containerCount: Int, brickCount: Int) = List(containerCount) { i ->
     BrickContainer(
         i,
-        List(if (i % 3 == 0) brickCount else brickCount - 2) { c -> if (c % 3 == 0) Color.Cyan else if (c % 2 == 0) Color.Yellow else Color.Magenta },
+        List(if (i % 3 == 0) brickCount else brickCount - 2) { c -> if (c % 3 == 0) 1 else if (c % 2 == 0) 2 else 3 },
         i == 2
     )
 }

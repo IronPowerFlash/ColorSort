@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option java_package = "com.flexi.colorsort.data";
+option java_multiple_files = true;
+
+message UserAppSettings {
+    int32 container_count = 1;
+    int32 container_size = 2;
+    int32 color_count = 3;
+    int32 color_scheme_id = 4;
+    bool colorblind_mode = 5;
+    repeated int32 selected_icons = 6 [packed=true];
+}

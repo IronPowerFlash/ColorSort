@@ -4,9 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.graphics.Color
 
-class BrickContainer(val id:Int, val initialBricks:List<Color>, selected:Boolean){
+class BrickContainer(val id:Int, val initialBricks:List<Int>, selected:Boolean){
     var selected by mutableStateOf(selected)
     var bricks = initialBricks.toMutableStateList()
 
@@ -14,7 +13,7 @@ class BrickContainer(val id:Int, val initialBricks:List<Color>, selected:Boolean
         return bricks.isNotEmpty()
     }
 
-    fun canPush(maxSize:Int, color: Color):Boolean{
+    fun canPush(maxSize:Int, color: Int):Boolean{
         if(bricks.isEmpty())
         {
             return true

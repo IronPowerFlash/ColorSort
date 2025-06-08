@@ -12,7 +12,10 @@
     <string name="btn_Close">Close</string>
     <string name="btn_Save">Save</string>
     <string name="color_scheme">Color scheme</string>
-    <string name="restart">Restart</string>
     <string name="undo">Undo</string>
     <string name="new_game">New Game</string>
+    <string name="colorblind_mode">Colorblind mode</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="select_icons_instruction">Select up to 10 icons for use</string>
 </resources>

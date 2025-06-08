@@ -1,23 +1,16 @@
 package com.flexi.colorsort.models
 
 import androidx.compose.ui.graphics.Color
-import com.flexi.colorsort.ui.theme.Blue2
-import com.flexi.colorsort.ui.theme.Blue3
-import com.flexi.colorsort.ui.theme.Blue4
+import com.flexi.colorsort.R
 import com.flexi.colorsort.ui.theme.BrickColorScheme
-import com.flexi.colorsort.ui.theme.Green2
-import com.flexi.colorsort.ui.theme.Green3
-import com.flexi.colorsort.ui.theme.Green4
-import com.flexi.colorsort.ui.theme.Purple2
-import com.flexi.colorsort.ui.theme.Purple3
-import com.flexi.colorsort.ui.theme.Red2
-import com.flexi.colorsort.ui.theme.Red3
 
 data class GameSettings(
     val containerCount: Int = 10,
     val containerSize: Int = 4,
     val colorCount: Int = 8,
     val colorSchemeId: Int = 1,
+    val colorBlindMode:Boolean = true,
+    val selectedIconIds: List<Int> = emptyList()
 )
 
 class ColorSchemes {
@@ -75,18 +68,19 @@ class ColorSchemes {
                 Color(0xFF6a4c93),
                 Color(0xFFb5a6c9)
             ),
+
             BrickColorScheme(
                 5, "Retro",
-                Green3,
-                Blue3,
-                Purple3,
-                Red3,
-                Green2,
-                Blue2,
-                Purple2,
-                Red2,
-                Green4,
-                Blue4
+                Color(0xFF20DF40),
+                Color(0xFF3355FF),
+                Color(0xFF7420DF),
+                Color(0xFFE01F1F),
+                Color(0xFF00A036),
+                Color(0xFF0026FF),
+                Color(0xFF47009E),
+                Color(0xFF990000),
+                Color(0xFF8FEF9F),
+                Color(0xFF4D85FF)
             ),
             BrickColorScheme(
                 6, "Neon",
@@ -152,3 +146,96 @@ class ColorSchemes {
         }
     }
 }
+
+class IconStore {
+    companion object
+    {
+        private val availableIcons: List<IconData> = listOf(
+            IconData(R.drawable.airplane, "Plane"),
+            IconData(R.drawable.atom, "Atom"),
+            IconData(R.drawable.atom_2),
+            IconData(R.drawable.bell, "Bell"),
+            IconData(R.drawable.bomb, "Bomb"),
+            IconData(R.drawable.bowling, "Bowling"),
+            IconData(R.drawable.bug_spider, "Spider"),
+            IconData(R.drawable.car, "Car"),
+            IconData(R.drawable.center_square),
+            IconData(R.drawable.center_wheel),
+            IconData(R.drawable.circular_connectivity),
+            IconData(R.drawable.clouds, "Cloud"),
+            IconData(R.drawable.connection, "Link"),
+            IconData(R.drawable.connection_pattern),
+            IconData(R.drawable.contrast),
+            IconData(R.drawable.control),
+            IconData(R.drawable.dead_star),
+            IconData(R.drawable.diamond),
+            IconData(R.drawable.diamond_1),
+            IconData(R.drawable.diamond_2, "Diamond"),
+            IconData(R.drawable.diamond_half),
+            IconData(R.drawable.dribbble),
+            IconData(R.drawable.drink, "Drink"),
+            IconData(R.drawable.drop, "Drop"),
+            IconData(R.drawable.egg, "Egg"),
+            IconData(R.drawable.emoji_happy),
+            IconData(R.drawable.emoji_happy_2),
+            IconData(R.drawable.emoji_happy_dead_circle),
+            IconData(R.drawable.emoji_happy_square_round),
+            IconData(R.drawable.emoji_minecraft),
+            IconData(R.drawable.emoji_neutral),
+            IconData(R.drawable.emoji_neutral_simple),
+            IconData(R.drawable.emoji_simple_no_face_circle),
+            IconData(R.drawable.emoji_surprised_circle),
+            IconData(R.drawable.emoji_tongue_sticking_out, "Tongue"),
+            IconData(R.drawable.eyes, "Eyes"),
+            IconData(R.drawable.flower, "Tulip"),
+            IconData(R.drawable.flower_105, "Flower"),
+            IconData(R.drawable.game_controller, "Gamepad"),
+            IconData(R.drawable.game_of_thrones),
+            IconData(R.drawable.ghost, "Ghost"),
+            IconData(R.drawable.ghost_2),
+            IconData(R.drawable.headphones, "Headphones"),
+            IconData(R.drawable.heart, "Heart"),
+            IconData(R.drawable.important_details),
+            IconData(R.drawable.key, "Key"),
+            IconData(R.drawable.lightning, "Lightning"),
+            IconData(R.drawable.mill, "Mill"),
+            IconData(R.drawable.moon, "Moon"),
+            IconData(R.drawable.mr_robot, "Fawkes"),
+            IconData(R.drawable.music, "Music"),
+            IconData(R.drawable.pac_man, "Pac man"),
+            IconData(R.drawable.planet, "Planet"),
+            IconData(R.drawable.planet_system, "Solar System"),
+            IconData(R.drawable.pyramid, "Pyramid"),
+            IconData(R.drawable.record),
+            IconData(R.drawable.settings, "Cog"),
+            IconData(R.drawable.shaded),
+            IconData(R.drawable.shaded_2),
+            IconData(R.drawable.ship, "Ship"),
+            IconData(R.drawable.shut_down, "Off"),
+            IconData(R.drawable.skull, "Skull"),
+            IconData(R.drawable.spiral),
+            IconData(R.drawable.star, "Star"),
+            IconData(R.drawable.star_2),
+            IconData(R.drawable.star_3),
+            IconData(R.drawable.stats_1),
+            IconData(R.drawable.target_1),
+            IconData(R.drawable.target_2),
+            IconData(R.drawable.tennis_ball, "Tennis"),
+            IconData(R.drawable.tie, "Tie"),
+            IconData(R.drawable.tinder, "Fire"),
+            IconData(R.drawable.ufo, "Ufo"),
+            IconData(R.drawable.umbrella, "Umbrella"),
+            IconData(R.drawable.weighted_storage_cube),
+            IconData(R.drawable.settings_wrench, "Wrench"),
+            IconData(R.drawable.wheel, "Wheel")
+        )
+
+        val iconMap = availableIcons.mapIndexed { i, icon -> i+1 to icon.iconResourceId }.toMap()
+
+        fun getRandomIconIds(count:Int):List<Int>{
+            return iconMap.map{ it.key}.toList<Int>().shuffled().take(count)
+        }
+    }
+}
+
+data class IconData(val iconResourceId: Int, val description:String = "")
