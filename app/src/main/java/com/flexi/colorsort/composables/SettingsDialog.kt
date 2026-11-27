@@ -347,8 +347,6 @@ fun ColorSchemeSwatch(colorSchemeId: Int, onClick: (Int) -> Unit) {
                     .aspectRatio(1f)
                     .background(colorScheme.color5)
             )
-        }
-        Row(Modifier.fillMaxWidth()) {
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -361,7 +359,8 @@ fun ColorSchemeSwatch(colorSchemeId: Int, onClick: (Int) -> Unit) {
                     .aspectRatio(1f)
                     .background(colorScheme.color7)
             )
-
+        }
+        Row(Modifier.fillMaxWidth()) {
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -379,6 +378,30 @@ fun ColorSchemeSwatch(colorSchemeId: Int, onClick: (Int) -> Unit) {
                     .weight(1f)
                     .aspectRatio(1f)
                     .background(colorScheme.color10)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color11)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color12)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color13)
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                    .background(colorScheme.color14)
             )
         }
     }

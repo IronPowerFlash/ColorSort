@@ -14,9 +14,14 @@ class BrickColorScheme(
     val color7: Color,
     val color8:Color,
     val color9: Color,
-    val color10:Color
+    val color10:Color,
+    val color11:Color,
+    val color12: Color,
+    val color13: Color,
+    val color14: Color
 ){
-    val colorMap = mapOf(Pair<Int, Color>(0, color1),
+    val colorMap = mapOf(
+        Pair<Int, Color>(0, color1),
         Pair<Int, Color>(1, color2),
         Pair<Int, Color>(2, color3),
         Pair<Int, Color>(3, color4),
@@ -25,5 +30,10 @@ class BrickColorScheme(
         Pair<Int, Color>(6, color7),
         Pair<Int, Color>(7, color8),
         Pair<Int, Color>(8, color9),
-        Pair<Int, Color>(9, color10))
+        Pair<Int, Color>(9, color10),
+        Pair<Int, Color>(10, color11),
+        Pair<Int, Color>(11, color12),
+        Pair<Int, Color>(12, color13),
+        Pair<Int, Color>(13, color14)
+    )
 }
