@@ -124,11 +124,13 @@ fun SettingsContent(
             Slider(
                 value = containerCount,
                 onValueChange = { containerCount = it },
-                steps = maxContainers - 4,
+                steps = maxContainers - 5,
                 onValueChangeFinished = {
 
                     if (colorCount >= containerCount -2) {
-                        colorCount = containerCount - 2
+                        if(containerCount - 2 >= 2)
+                            colorCount = containerCount - 2
+
                     }
                 },
                 modifier = Modifier.padding(0.dp),
@@ -151,7 +153,7 @@ fun SettingsContent(
                     }
 
                 },
-                valueRange = 3f..maxContainers.toFloat()
+                valueRange = 4f..maxContainers.toFloat()
             )
         }
 

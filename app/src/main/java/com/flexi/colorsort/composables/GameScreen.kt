@@ -42,6 +42,8 @@ import com.flexi.colorsort.R
 import com.flexi.colorsort.models.ColorSchemes
 import com.flexi.colorsort.models.GameViewModel
 import com.flexi.colorsort.models.IconStore
+import kotlin.math.floor
+import kotlin.math.roundToInt
 
 
 @Composable
@@ -145,6 +147,7 @@ fun GameContent(
             "iconIds: ${gameViewModel.gameIconIds.joinToString(",")}"
         )
         Log.d("GameScreen", "iconResourceIds: ${gameViewModel.gameIconIds.joinToString(", "){IconStore.iconMap[it].toString()}}")
+        val colorPickMap = generateColorMap(gameViewModel.settings.colorCount)
         BrickContainerList(
             containers = gameViewModel.containers,
             maxBricks = gameViewModel.settings.containerSize,
@@ -163,6 +166,7 @@ fun GameContent(
             colorScheme = ColorSchemes.getColorScheme(gameViewModel.settings.colorSchemeId),
             renderIcons = gameViewModel.settings.colorBlindMode,
 //            icons = gameViewModel.settings.selectedIcons,
+            colorPickMap = colorPickMap,
             iconIds = gameViewModel.gameIconIds
         )
         Row(
@@ -326,4 +330,22 @@ fun ConfirmDialog(
 
         }
     }
+}
+
+private fun generateColorMap(colorCount: Int):Map<Int, Int> {
+    val maxColors = 14
+    val step = floor(maxColors.toDouble()/colorCount).roundToInt()
+    var counter= 0;
+    var colorMap = mutableMapOf<Int, Int>()
+    var currentNo = 0;
+    while(counter < colorCount){
+        colorMap.put(counter, currentNo)
+        currentNo += step
+        if(currentNo > maxColors-1)
+        {
+            currentNo = 2
+        }
+        counter++;
+    }
+    return colorMap;
 }

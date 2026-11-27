@@ -55,8 +55,8 @@ fun BrickContainerList(
     windowSizeClass: WindowSizeClass,
     colorScheme: BrickColorScheme,
     renderIcons: Boolean,
-    iconIds: List<Int> = emptyList<Int>()
-
+    colorPickMap: Map<Int, Int>,
+    iconIds: List<Int> = emptyList<Int>(),
 ) {
     var rowCount = 1
     if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)) {
@@ -96,7 +96,8 @@ fun BrickContainerList(
                 maxColumnHeight = columnHeight,
                 colorScheme = colorScheme,
                 renderIcons = renderIcons,
-                iconIds = iconIds
+                iconIds = iconIds,
+                colorPickMap = colorPickMap,
             )
         }
     }
@@ -113,7 +114,8 @@ fun BrickContainerComponent(
     maxColumnHeight: Dp,
     colorScheme: BrickColorScheme,
     renderIcons: Boolean,
-    iconIds: List<Int>
+    iconIds: List<Int>,
+    colorPickMap: Map<Int, Int>
 ) {
     var borderWidth = 2
     val spacing = 1
@@ -150,13 +152,18 @@ fun BrickContainerComponent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+
+
         for (brick in bricks) {
 //            val icon = iconIds?.size?.let { if(it > 0 && it >= brick) IconStore.iconMap[iconIds[brick]] else null }
+
             val icon = IconStore.iconMap[iconIds[brick]]
-            ColorBrick(brick, modifier, maxBrickHeight, columnWidth, colorScheme, renderIcons, icon)
+            ColorBrick(brick, modifier, maxBrickHeight, columnWidth, colorScheme, renderIcons, icon, colorPickMap)
         }
     }
 }
+
+
 
 @Composable
 fun ColorBrick(
@@ -166,9 +173,11 @@ fun ColorBrick(
     width: Dp,
     colorScheme: BrickColorScheme,
     renderIcon:Boolean,
-    iconResourceId: Int? = null
+    iconResourceId: Int? = null,
+    colorPickMap: Map<Int, Int>
 ) {
-    val color = colorScheme.colorMap[colorId]?:Color.Green
+    val mappedColorId = colorPickMap.getOrDefault(colorId, colorId);
+    val color = colorScheme.colorMap[mappedColorId]?:Color.Green
     val description = when (colorId) {
         1 -> "a"
         2 -> "b"
@@ -242,7 +251,8 @@ fun BrickContainerListPreview() {
         maxBricks = brickCount,
         windowSizeClass = windowSizeClass,
         colorScheme = ColorSchemes.getColorScheme(2),
-        renderIcons = true
+        renderIcons = true,
+        colorPickMap = mapOf(1 to 1, 2 to 3, 3 to 5, 4 to 7)
     )
 
 }
