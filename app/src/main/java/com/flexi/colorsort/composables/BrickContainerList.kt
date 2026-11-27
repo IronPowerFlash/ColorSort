@@ -167,6 +167,20 @@ fun ColorBrick(
     iconResourceId: Int? = null
 ) {
     val color = colorScheme.colorMap[colorId]?:Color.Green
+    val description = when (colorId) {
+        1 -> "A"
+        2 -> "B"
+        3 -> "C"
+        4 -> "D"
+        5 -> "E"
+        6 -> "F"
+        7 -> "G"
+        8 -> "H"
+        9 -> "I"
+        10 -> "J"
+        else -> "K"
+
+    }
     Box(
         modifier = modifier
             .background(color)
@@ -176,7 +190,7 @@ fun ColorBrick(
         contentAlignment = Alignment.Center
     ) {
         if(renderIcon && iconResourceId != null) {
-            BrickShape(iconResourceId, color)
+            BrickShape(iconResourceId, color, description)
         }
     }
 }
@@ -184,7 +198,8 @@ fun ColorBrick(
 @Composable
 fun BrickShape(
     iconResourceId: Int,
-    brickColor: Color) {
+    brickColor: Color,
+    description: String) {
     val contrastMap = mapOf<Color, Double>(
         Pair<Color, Double>(Color.White, ColorUtils.calculateContrast(Color.White.toArgb(), brickColor.toArgb())),
         Pair<Color, Double>(Color.Gray, ColorUtils.calculateContrast(Color.Gray.toArgb(), brickColor.toArgb())),
@@ -194,7 +209,7 @@ fun BrickShape(
     Icon(
         painterResource(iconResourceId),
         tint = iconColor,
-        contentDescription = "",
+        contentDescription = description,
     )
 }
 
