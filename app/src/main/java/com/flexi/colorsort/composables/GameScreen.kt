@@ -69,7 +69,7 @@ fun GameScreen(
                 GameContent(gameViewModel,
                     windowSizeClass,
                     onSettingsClick = { settingsDialogOpen.value = true },
-                    modifier,)
+                    modifier)
             }
     }
 }
@@ -117,6 +117,7 @@ fun GameContent(
         )
         Row(
             modifier = modifier
+                .padding(bottom=0.dp)
                 .fillMaxWidth()
                 .constrainAs(topRow) {
                     top.linkTo(parent.top)

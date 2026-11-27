@@ -66,7 +66,7 @@ fun BrickContainerList(
 
     var maxItems = ceil(containers.size / rowCount.toFloat()).roundToInt()
     var rowSize by remember { mutableStateOf(Size.Zero) }
-    val spacing = 20
+    val spacing = 10
 
     FlowRow(
         modifier = modifier
@@ -76,7 +76,9 @@ fun BrickContainerList(
                 rowSize = coordinates.size.toSize()
             },
         horizontalArrangement = Arrangement.spacedBy(spacing.dp, Alignment.CenterHorizontally),
-        verticalArrangement = Arrangement.spacedBy(spacing.dp, Alignment.CenterVertically),
+//        verticalArrangement = Arrangement.spacedBy(spacing.dp, Alignment.CenterVertically),
+        //horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalArrangement = Arrangement.SpaceEvenly,
         maxItemsInEachRow = maxItems) {
         for (container in containers) {
             var maxColumnWidth = LocalDensity.current.run {
@@ -114,7 +116,7 @@ fun BrickContainerComponent(
     iconIds: List<Int>
 ) {
     var borderWidth = 2
-    val spacing = 3
+    val spacing = 1
 
     var columnHeight = maxColumnHeight - 30.dp
     if (columnHeight / maxBricks > 80.dp) {
@@ -140,8 +142,8 @@ fun BrickContainerComponent(
             .width(columnWidth + (spacing * 2).dp + (borderWidth * 2).dp)
             .height(columnHeight)
             .background(if (isSelected) Color.Gray else Color.Black)
-            .glowBorder(Color.White, 10.dp, if (isSelected) 5.dp else 0.dp)
-            .border(borderWidth.dp, if (isSelected) Color.White else Color.Gray)
+            .glowBorder(Color.Cyan, 10.dp, if (isSelected) 6.dp else 0.dp)
+            .border(borderWidth.dp, if (isSelected) Color.Cyan else Color.Gray)
             .padding(bottom = (spacing).dp)
             .clickable(onClick = { onContainerSelected() }),
         verticalArrangement = Arrangement.spacedBy(spacing.dp, Alignment.Bottom),
@@ -168,17 +170,26 @@ fun ColorBrick(
 ) {
     val color = colorScheme.colorMap[colorId]?:Color.Green
     val description = when (colorId) {
-        1 -> "A"
-        2 -> "B"
-        3 -> "C"
-        4 -> "D"
-        5 -> "E"
-        6 -> "F"
-        7 -> "G"
-        8 -> "H"
-        9 -> "I"
-        10 -> "J"
-        else -> "K"
+        1 -> "a"
+        2 -> "b"
+        3 -> "c"
+        4 -> "d"
+        5 -> "e"
+        6 -> "f"
+        7 -> "g"
+        8 -> "h"
+        9 -> "i"
+        10 -> "j"
+        11 -> "k"
+        12 -> "l"
+        13 -> "m"
+        14 -> "n"
+        15 -> "o"
+        16 -> "p"
+        17 -> "q"
+        18 -> "r"
+        19 -> "s"
+        else -> "t"
 
     }
     Box(

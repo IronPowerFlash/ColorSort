@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -53,7 +54,9 @@ import com.flexi.colorsort.models.GameSettings
 import com.flexi.colorsort.models.IconStore
 import kotlin.math.roundToInt
 
-
+val maxColors = 14
+val maxBricks = 16
+val maxContainers = 16
 @Composable
 fun SettingsScreen(
     onCancel: () -> Unit,
@@ -100,7 +103,8 @@ fun SettingsContent(
     ) {
         Text(
             stringResource(R.string.settings),
-            fontSize = 16.sp,
+            fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center
         )
         Row(
@@ -120,11 +124,11 @@ fun SettingsContent(
             Slider(
                 value = containerCount,
                 onValueChange = { containerCount = it },
-                steps = 8,
+                steps = maxContainers - 4,
                 onValueChangeFinished = {
 
-                    if (colorCount > containerCount) {
-                        colorCount = containerCount
+                    if (colorCount >= containerCount -2) {
+                        colorCount = containerCount - 2
                     }
                 },
                 modifier = Modifier.padding(0.dp),
@@ -147,11 +151,12 @@ fun SettingsContent(
                     }
 
                 },
-                valueRange = 3f..12f
+                valueRange = 3f..maxContainers.toFloat()
             )
         }
+
         IntegerSliderField(
-            1, 10, R.string.container_size, settings.containerSize,
+            1, maxBricks, R.string.container_size, settings.containerSize,
             onValueChanged = { newValue -> containerSize = newValue }
         )
 
@@ -172,11 +177,11 @@ fun SettingsContent(
             Slider(
                 value = colorCount,
                 onValueChange = { colorCount = it },
-                steps = 7,
+                steps = maxColors - 3,
                 onValueChangeFinished = {
 
-                    if (colorCount > containerCount) {
-                        containerCount = colorCount
+                    if (colorCount >= containerCount-2) {
+                        containerCount = colorCount +2
                     }
                 },
                 modifier = Modifier.padding(0.dp),
@@ -199,16 +204,18 @@ fun SettingsContent(
                     }
 
                 },
-                valueRange = 2f..10f
+                valueRange = 2f..maxColors.toFloat()
             )
         }
-        Text(stringResource(R.string.color_scheme), modifier = Modifier.fillMaxWidth(0.5f))
+
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
+            Text(stringResource(R.string.color_scheme),
+                modifier = Modifier.fillMaxWidth(0.5f),
+                color= MaterialTheme.colorScheme.onBackground)
             TextButton(
                 onClick = { colorSchemeExpanded = !colorSchemeExpanded },
 
@@ -218,6 +225,7 @@ fun SettingsContent(
                     ColorSchemes.getColorScheme(colorSchemeId).name,
                     color = MaterialTheme.colorScheme.onBackground
                 )
+                Icon(Icons.Filled.ArrowDropDown, contentDescription = "")
             }
 
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -254,21 +262,15 @@ fun SettingsContent(
             )
             Checkbox(checked = colorBlindMode, onCheckedChange = { colorBlindMode = it })
         }
-        Text(
-            "Changing settings will start a new game",
-            fontStyle = FontStyle.Italic,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+
 
         IconSetSelector(selectedIconIdsState)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            TextButton(onClick = { onCancel() }, Modifier.padding(8.dp)) {
-                Text(stringResource(R.string.btn_Close))
+            TextButton(onClick = { onCancel() }, Modifier.padding(8.dp).background(MaterialTheme.colorScheme.secondary)) {
+                Text(stringResource(R.string.btn_Close), color = MaterialTheme.colorScheme.onSecondary)
             }
             TextButton(
                 onClick = {
@@ -284,10 +286,19 @@ fun SettingsContent(
                     )
                 },
                 Modifier.padding(8.dp)
+                    .background(MaterialTheme.colorScheme.primary),
+
             ) {
-                Text(stringResource(R.string.btn_Save))
+                Text(stringResource(R.string.btn_Save), color = MaterialTheme.colorScheme.onPrimary)
             }
         }
+        Text(
+            "Changing settings will start a new game",
+            fontStyle = FontStyle.Italic,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.onBackground,
+        )
     }
 
 }
@@ -376,7 +387,7 @@ fun ColorSchemeSwatch(colorSchemeId: Int, onClick: (Int) -> Unit) {
 @Composable
 fun IconSetSelector(selectedIconIds: MutableList<Int>) {
     Row(modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.select_icons_instruction), color = MaterialTheme.colorScheme.onBackground)
+        Text(stringResource(R.string.select_icons_instruction, maxColors), color = MaterialTheme.colorScheme.onBackground)
     }
 
     val scrollState = rememberScrollState(initial = 0)
@@ -400,7 +411,7 @@ fun IconSetSelector(selectedIconIds: MutableList<Int>) {
                     val selected = selectedIconIds.indexOf(icon.key) >= 0
                     if (selected) {
                         selectedIconIds.remove(icon.key)
-                    } else if (currentCount < 10) {
+                    } else if (currentCount < maxColors) {
                         selectedIconIds.add(icon.key)
                     }
                 })
@@ -448,7 +459,9 @@ fun IntegerSliderField(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(stringResource(labelResourceId), modifier = Modifier.fillMaxWidth(0.3f))
+        Text(stringResource(labelResourceId),
+            modifier = Modifier.fillMaxWidth(0.3f),
+            color = MaterialTheme.colorScheme.onBackground)
 
         val interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
 
